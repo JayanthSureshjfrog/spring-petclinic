@@ -33,18 +33,23 @@ jobs:
         JF_URL: https://psblr.jfrog.io
         JF_ACCESS_TOKEN: ${{ secrets.JFROG_TOKEN }}
 
+    - name: Check connectivity
+      run: |
+        jf config show
+        jf rt ping
+
     - name: Configure Maven with JFrog Artifactory
       run: |
-        set -euxo pipefail
-        mkdir -p jfrog-maven
-        jf --version || true
-        jf config show setup-jfrog-cli-server || true
-        jf config add setup-jfrog-cli-server \
-          --url=$JF_URL \
-          --user=${{ secrets.JFROG_USER }} \
-          --access-token=${{ secrets.JFROG_TOKEN }} \
-          --interactive=false \
-          --overwrite=true
+        # set -euxo pipefail
+        # mkdir -p jfrog-maven
+        # jf --version || true
+        # jf config show setup-jfrog-cli-server || true
+        # jf config add setup-jfrog-cli-server \
+        #   --url=$JF_URL \
+        #   --user=${{ secrets.JFROG_USER }} \
+        #   --access-token=${{ secrets.JFROG_TOKEN }} \
+        #   --interactive=false \
+        #   --overwrite=true
         echo "=== jfrog config list ==="
         jf config show setup-jfrog-cli-server || true
         jf mvnc \
