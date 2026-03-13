@@ -37,17 +37,17 @@ jobs:
       run: |
         set -euxo pipefail
         mkdir -p jfrog-maven
-        jfrog --version || true
-        jfrog config show setup-jfrog-cli-server || true
-        jfrog config add setup-jfrog-cli-server \
+        jf --version || true
+        jf config show setup-jfrog-cli-server || true
+        jf config add setup-jfrog-cli-server \
           --url=$JF_URL \
           --user=${{ secrets.JFROG_USER }} \
           --access-token=${{ secrets.JFROG_TOKEN }} \
           --interactive=false \
           --overwrite=true
         echo "=== jfrog config list ==="
-        jfrog config show setup-jfrog-cli-server || true
-        jfrog mvn-config \
+        jf config show setup-jfrog-cli-server || true
+        jf mvnc \
           --server-id-resolve=setup-jfrog-cli-server \
           --server-id-deploy=setup-jfrog-cli-server \
           --repo-resolve-releases=jay-maven-dev-virtual \
@@ -66,7 +66,7 @@ jobs:
     - name: Maven Build with JFrog
       working-directory: "${{ github.workspace }}"
       run: |
-        jfrog rt mvn clean package -DskipTests \
+        jf mvn clean package -DskipTests \
           --settings ../jfrog-maven/settings.xml \
           --build-name=${BUILD_NAME} \
           --build-number=${BUILD_NUMBER}
