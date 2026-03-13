@@ -11,9 +11,9 @@ jobs:
       BUILD_NAME: petclinic-build
       BUILD_NUMBER: ${{ github.run_number }}
       # Host-only for Docker login
-      JFROG_URL: trialny4vkg.jfrog.io
+      JFROG_URL: psblr.jfrog.io
       # Full URL (include scheme) for JFrog CLI config and mvn-config
-      JF_URL: https://trialny4vkg.jfrog.io
+      JF_URL: https://psblr.jfrog.io
       DOCKER_REPO: petclinic-docker-local
       JFROG_CLI_LOG_LEVEL: INFO
 
@@ -30,7 +30,7 @@ jobs:
     - name: Setup JFrog CLI
       uses: jfrog/setup-jfrog-cli@v4
       env:
-        JF_URL: https://trialny4vkg.jfrog.io
+        JF_URL: https://psblr.jfrog.io
         JF_ACCESS_TOKEN: ${{ secrets.JFROG_TOKEN }}
 
     - name: Configure Maven with JFrog Artifactory
@@ -50,10 +50,10 @@ jobs:
         jfrog mvn-config \
           --server-id-resolve=setup-jfrog-cli-server \
           --server-id-deploy=setup-jfrog-cli-server \
-          --repo-resolve-releases=maven-virtual \
-          --repo-resolve-snapshots=maven-virtual \
-          --repo-deploy-releases=petclinic-maven-local \
-          --repo-deploy-snapshots=petclinic-maven-local || true
+          --repo-resolve-releases=jay-maven-dev-virtual \
+          --repo-resolve-snapshots=jay-maven-dev-virtual \
+          --repo-deploy-releases=jay-maven-dev-virtual \
+          --repo-deploy-snapshots=jay-maven-dev-virtual || true
         echo "=== mvn-config result, listing ~/.m2 ==="
         ls -la ~/.m2 || true
         echo "=== generated settings.xml ==="
@@ -64,7 +64,7 @@ jobs:
         echo "===== settings.xml ====="
         cat jfrog-maven/settings.xml || true
     - name: Maven Build with JFrog
-      working-directory: spring-petclinic
+      working-directory: "${{ github.workspace }}"
       run: |
         jfrog rt mvn clean package -DskipTests \
           --settings ../jfrog-maven/settings.xml \
@@ -78,7 +78,7 @@ jobs:
         password: ${{ secrets.JFROG_TOKEN }}
 
     - name: Docker Build
-      working-directory: spring-petclinic
+      working-directory: "${{ github.workspace }}"
       run: |
         jfrog docker build \
           --build-name=${BUILD_NAME} \
