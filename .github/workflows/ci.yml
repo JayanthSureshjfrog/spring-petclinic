@@ -93,47 +93,43 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: mvn clean package -DskipTests -B -s ~/.m2/settings.xml
 
-    - name: Collect Build Info
+    - name: Upload Maven artifacts to Artifactory
       working-directory: ${{ github.workspace }}
       run: |
-        jf rt build-collect-env ${BUILD_NAME} ${BUILD_NUMBER}
-        jf rt build-add-git ${BUILD_NAME} ${BUILD_NUMBER}
-        jf rt build-add-dependencies ${BUILD_NAME} ${BUILD_NUMBER} .
-        jf rt build-publish ${BUILD_NAME} ${BUILD_ID} --detailed-summary=true
-    
+        jf rt u "target/*.jar" "${PLATFORM_REPO}/" \
+          --build-name=${BUILD_NAME} \
+          --build-number=${BUILD_NUMBER} \
+          --module=${MODULE_NAME}
+
     - name: Docker Login to Artifactory
       uses: docker/login-action@v2
       with:
-        registry: ${{ env.JF_URL }}
+        registry: ${{ env.JFROG_URL }}
         username: ${{ secrets.JFROG_USER }}
         password: ${{ secrets.JFROG_TOKEN }}
 
-    - name: Docker Build
-      working-directory: "${{ github.workspace }}"
+    - name: Docker Build and Push
+      working-directory: ${{ github.workspace }}
       run: |
-        jf docker build \
+        jf docker build -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
+        jf docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} \
           --build-name=${BUILD_NAME} \
-          --build-number=${BUILD_NUMBER} \
-          -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
-    - name: Docker Push
-      run: docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
+          --build-number=${BUILD_NUMBER}
 
-    - name: Publish Build Info
+    - name: Publish Build Info (Maven + Docker)
       working-directory: ${{ github.workspace }}
       run: |
         jf rt build-collect-env ${BUILD_NAME} ${BUILD_NUMBER}
-        jf rt build-add-dependencies ${BUILD_NAME} ${BUILD_NUMBER} .
         jf rt build-add-git ${BUILD_NAME} ${BUILD_NUMBER}
         jf rt build-publish ${BUILD_NAME} ${BUILD_NUMBER} --detailed-summary=true
-        
+
     - name: Inspect published build-info
       run: |
         echo "=== Published build-info ==="
-        jf rt curl -X GET /api/build/${BUILD_NAME}/${BUILD_NUMBER} || true
-    - name: Xray Scan
-      run: |
-        jf build-scan ${BUILD_NAME} ${BUILD_NUMBER} --vuln --format json
+        jf rt curl -X GET "/api/build/${BUILD_NAME}/${BUILD_NUMBER}" || true
 
-    - name: Docker Image Scan
-      run: |
-        jf docker scan ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} --vuln --format json
+    - name: Xray Build Scan
+      run: jf build-scan ${BUILD_NAME} ${BUILD_NUMBER} --vuln --format json
+
+    - name: Xray Docker Image Scan
+      run: jf docker scan ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} --vuln --format json
