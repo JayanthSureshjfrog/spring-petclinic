@@ -98,7 +98,8 @@ jobs:
       run: |
         jf rt build-collect-env ${BUILD_NAME} ${BUILD_NUMBER}
         jf rt build-add-git ${BUILD_NAME} ${BUILD_NUMBER}
-
+        jf rt build-add-dependencies ${BUILD_NAME} ${BUILD_NUMBER} .
+        jf rt build-publish ${BUILD_NAME} ${BUILD_ID} --detailed-summary=true
     
     - name: Docker Login to Artifactory
       uses: docker/login-action@v2
@@ -118,8 +119,13 @@ jobs:
       run: docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
 
     - name: Publish Build Info
+      working-directory: ${{ github.workspace }}
       run: |
-        jf rt build-publish ${BUILD_NAME} ${BUILD_NUMBER}
+        jf rt build-collect-env ${BUILD_NAME} ${BUILD_NUMBER}
+        jf rt build-add-dependencies ${BUILD_NAME} ${BUILD_NUMBER} .
+        jf rt build-add-git ${BUILD_NAME} ${BUILD_NUMBER}
+        jf rt build-publish ${BUILD_NAME} ${BUILD_NUMBER} --detailed-summary=true
+        
     - name: Inspect published build-info
       run: |
         echo "=== Published build-info ==="
