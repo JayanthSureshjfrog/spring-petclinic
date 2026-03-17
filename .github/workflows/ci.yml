@@ -118,10 +118,10 @@ jobs:
         jf docker build -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
         echo "jf docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} \
           --build-name=${BUILD_NAME} \
-          --build-number=${BUILD_NUMBER}"
+          --build-number=${BUILD_NUMBER} --skip-login"
         jf docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} \
           --build-name=${BUILD_NAME} \
-          --build-number=${BUILD_NUMBER}
+          --build-number=${BUILD_NUMBER} --skip-login
 
     - name: Publish Build Info (Maven + Docker)
       working-directory: ${{ github.workspace }}
