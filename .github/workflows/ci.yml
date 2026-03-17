@@ -44,9 +44,27 @@ jobs:
       run:
         jf mvnc --repo-deploy-releases=$PLATFORM_REPO --repo-deploy-snapshots=$PLATFORM_REPO --repo-resolve-releases=$PLATFORM_REPO --repo-resolve-snapshots=$PLATFORM_REPO
 
-    - name: Mvn Clean Install
+        echo "=== mvn-config result, listing ~/.m2 ==="
+        ls -la ~/.m2 || true
+        echo "=== generated settings.xml ==="
+        cat ~/.m2/settings.xml || true
+        cp ~/.m2/settings.xml jfrog-maven/settings.xml || true 
+        
+    - name: Verify Maven Config
       run: |
-           jf mvn clean install -U -X --build-name=$BUILD_NAME --build-number=$BUILD_NUMBER --module $MODULE_NAME
+        echo "===== settings.xml ====="
+        cat jfrog-maven/settings.xml || true
+    - name: Maven Build with JFrog
+      working-directory: spring-petclinic
+      run: |
+        jf mvn clean package -DskipTests \
+          --settings ../jfrog-maven/settings.xml \
+          --build-name=${BUILD_NAME} \
+          --build-number=${BUILD_NUMBER}
+
+    # - name: Mvn Clean Install
+    #   run: |
+    #        jf mvn clean install -U -X --build-name=$BUILD_NAME --build-number=$BUILD_NUMBER --module $MODULE_NAME
            
     - name: Docker Login to Artifactory
       uses: docker/login-action@v2
