@@ -138,9 +138,10 @@ jobs:
 
     - name: Publish Build Info (Maven + Docker)
       run: |
-        jf rt build-collect-env ${BUILD_NAME} ${BUILD_NUMBER}
-        jf rt build-add-git ${BUILD_NAME} ${BUILD_NUMBER}
-        jf rt build-publish ${BUILD_NAME} ${BUILD_NUMBER} --detailed-summary=true
+        # jf rt build-collect-env ${BUILD_NAME} ${BUILD_NUMBER}
+        # jf rt build-add-git ${BUILD_NAME} ${BUILD_NUMBER}
+        jf rt build-publish ${BUILD_NAME} ${BUILD_NUMBER} --detailed-summary=true --collect-env --collect-git-info --git-config-file-path
+        
     - name: Inspect published build-info
       run: |
         echo "=== Published build-info ==="
