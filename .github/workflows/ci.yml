@@ -112,8 +112,13 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         echo "Building Docker image..."
+        echo "jf docker login ${JFROG_URL}"
         jf docker login ${JFROG_URL}
+        echo "jf docker build -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} ."
         jf docker build -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
+        echo "jf docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} \
+          --build-name=${BUILD_NAME} \
+          --build-number=${BUILD_NUMBER}"
         jf docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} \
           --build-name=${BUILD_NAME} \
           --build-number=${BUILD_NUMBER}
