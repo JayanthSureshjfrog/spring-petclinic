@@ -40,63 +40,21 @@ jobs:
         jf config show
         jf rt ping
 
-    - name: Generate Maven settings.xml
-      run: |
-        mkdir -p ~/.m2
-        REPO_URL="${JF_URL}/artifactory/${PLATFORM_REPO}"
-        cat > ~/.m2/settings.xml << EOF
-        <settings>
-          <servers>
-            <server>
-              <id>artifactory</id>
-              <username>${{ secrets.JFROG_USER }}</username>
-              <password>${{ secrets.JFROG_TOKEN }}</password>
-            </server>
-          </servers>
-          <profiles>
-            <profile>
-              <id>artifactory</id>
-              <repositories>
-                <repository>
-                  <id>artifactory</id>
-                  <url>${REPO_URL}</url>
-                  <releases><enabled>true</enabled></releases>
-                  <snapshots><enabled>true</enabled></snapshots>
-                </repository>
-              </repositories>
-              <pluginRepositories>
-                <pluginRepository>
-                  <id>artifactory</id>
-                  <url>${REPO_URL}</url>
-                  <releases><enabled>true</enabled></releases>
-                  <snapshots><enabled>true</enabled></snapshots>
-                </pluginRepository>
-              </pluginRepositories>
-            </profile>
-          </profiles>
-          <activeProfiles>
-            <activeProfile>artifactory</activeProfile>
-          </activeProfiles>
-          <mirrors>
-            <mirror>
-              <id>artifactory</id>
-              <mirrorOf>*</mirrorOf>
-              <url>${REPO_URL}</url>
-            </mirror>
-          </mirrors>
-        </settings>
-        EOF
-        echo "=== settings.xml (passwords masked) ==="
-        sed 's|<password>.*</password>|<password>****</password>|g' ~/.m2/settings.xml
-
-    - name: Maven Build
-      working-directory: ${{ github.workspace }}
-      run: mvn clean package -DskipTests -B -s ~/.m2/settings.xml
-
-    - name: Upload Maven artifacts to Artifactory
+    - name: Configure Maven with JFrog CLI
       working-directory: ${{ github.workspace }}
       run: |
-        jf rt u "target/*.jar" "${PLATFORM_REPO}/" \
+        jf mvnc \
+          --server-id-resolve=setup-jfrog-cli-server \
+          --server-id-deploy=setup-jfrog-cli-server \
+          --repo-resolve-releases=${PLATFORM_REPO} \
+          --repo-resolve-snapshots=${PLATFORM_REPO} \
+          --repo-deploy-releases=${PLATFORM_REPO} \
+          --repo-deploy-snapshots=${PLATFORM_REPO}
+
+    - name: Maven Build and Deploy to Artifactory
+      working-directory: ${{ github.workspace }}
+      run: |
+        jf mvn clean deploy -DskipTests -B \
           --build-name=${BUILD_NAME} \
           --build-number=${BUILD_NUMBER} \
           --module=${MODULE_NAME}
