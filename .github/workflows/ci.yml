@@ -89,7 +89,7 @@ jobs:
         sed 's|<password>.*</password>|<password>****</password>|g' ~/.m2/settings.xml
     - name: Maven Build
       working-directory: ${{ github.workspace }}
-      run: mvn clean package -DskipTests -B -s ~/.m2/settings.xml
+      run: mvn clean package -X -DskipTests -B -s ~/.m2/settings.xml
 
     - name: Collect Build Info
       working-directory: ${{ github.workspace }}
