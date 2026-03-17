@@ -42,39 +42,43 @@ jobs:
 
     - name: Configure Maven with JFrog Artifactory
       run: |
-        jf mvnc --repo-deploy-releases=$PLATFORM_REPO --repo-deploy-snapshots=$PLATFORM_REPO --repo-resolve-releases=$PLATFORM_REPO --repo-resolve-snapshots=$PLATFORM_REPO
-        # Create settings-security.xml to prevent Maven password decryption error
-        mkdir -p ~/.m2
-        cat > ~/.m2/settings-security.xml << 'EOF'
-        <settingsSecurity>
-          <master></master>
-        </settingsSecurity>
-        EOF
-        
-        # set -euxo pipefail
-        # mkdir -p jfrog-maven
-        # echo "=== mvn-config result, listing ~/.m2 ==="
-        # ls -la ~/.m2 || true
-        # echo "=== generated settings.xml ==="
-        # cat ~/.m2/settings.xml || true
-        # cp ~/.m2/settings.xml jfrog-maven/settings.xml || true 
-        
-    # - name: Verify Maven Config
-    #   run: |
-    #     echo "===== settings.xml ====="
-    #     cat jfrog-maven/settings.xml || true
-    # - name: Maven Build with JFrog
-    #   # working-directory: "${{ github.workspace }}"
-    #   run: |
-    #     jf mvn clean package -DskipTests \
-    #       --settings ./jfrog-maven/settings.xml \
-    #       --build-name=${BUILD_NAME} \
-    #       --build-number=${BUILD_NUMBER}
-
-    - name: Mvn Clean Install
+        set -euxo pipefail
+        mkdir -p jfrog-maven
+        jf --version || true
+        # jfrog config show setup-jfrog-cli-server || true
+        # # jfrog config add setup-jfrog-cli-server \
+        # #   --url=$JF_URL \
+        # #   --user=${{ secrets.JFROG_USER }} \
+        # #   --access-token=${{ secrets.JFROG_TOKEN }} \
+        # #   --interactive=false \
+        # #   --overwrite=true
+        # echo "=== jfrog config list ==="
+        # jfrog config show setup-jfrog-cli-server || true
+        jf mvn-config \
+          --server-id-resolve=setup-jfrog-cli-server \
+          --server-id-deploy=setup-jfrog-cli-server \
+          --repo-resolve-releases=$PLATFORM_REPO \
+          --repo-resolve-snapshots=$PLATFORM_REPO \
+          --repo-deploy-releases=$PLATFORM_REPO \
+          --repo-deploy-snapshots=$PLATFORM_REPO || true
+        echo "=== mvn-config result, listing ~/.m2 ==="
+        ls -la ~/.m2 || true
+        echo "=== generated settings.xml ==="
+        cat ~/.m2/settings.xml || true
+        cp ~/.m2/settings.xml jfrog-maven/settings.xml || true
+    - name: Verify Maven Config
       run: |
-           jf mvn clean install -U -X --build-name=$BUILD_NAME --build-number=$BUILD_NUMBER --module $MODULE_NAME
-           
+        echo "===== settings.xml ====="
+        cat jfrog-maven/settings.xml || true
+    - name: Maven Build with JFrog
+      working-directory: spring-petclinic
+      run: |
+        jfrog rt mvn clean package -DskipTests \
+          --settings ../jfrog-maven/settings.xml \
+          --build-name=${BUILD_NAME} \
+          --build-number=${BUILD_NUMBER}
+
+    
     - name: Docker Login to Artifactory
       uses: docker/login-action@v2
       with:
