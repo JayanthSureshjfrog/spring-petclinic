@@ -74,7 +74,7 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         jfrog rt mvn clean package -DskipTests \
-          --settings ../jfrog-maven/settings.xml \
+          # --settings ../jfrog-maven/settings.xml \
           --build-name=${BUILD_NAME} \
           --build-number=${BUILD_NUMBER}
 
