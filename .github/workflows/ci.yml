@@ -71,7 +71,7 @@ jobs:
         echo "===== settings.xml ====="
         cat jfrog-maven/settings.xml || true
     - name: Maven Build with JFrog
-      working-directory: spring-petclinic
+      working-directory: ${{ github.workspace }}
       run: |
         jfrog rt mvn clean package -DskipTests \
           --settings ../jfrog-maven/settings.xml \
