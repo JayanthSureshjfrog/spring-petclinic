@@ -8,7 +8,7 @@ jobs:
     env:
       IMAGE_NAME: petclinic
       IMAGE_TAG: 1.1.1
-      BUILD_NAME: petclinic-build
+      BUILD_NAME: Petclinic CI with JFrog
       BUILD_NUMBER: ${{ github.run_number }}
       MODULE_NAME: petclinic-module
       PLATFORM_REPO: jay-maven-dev-virtual
