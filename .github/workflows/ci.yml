@@ -101,16 +101,18 @@ jobs:
           --build-number=${BUILD_NUMBER} \
           --module=${MODULE_NAME}
 
-    - name: Docker Login to Artifactory
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ env.JFROG_URL }}
-        username: ${{ secrets.JFROG_USER }}
-        password: ${{ secrets.JFROG_TOKEN }}
+    # - name: Docker Login to Artifactory
+    #   uses: docker/login-action@v2
+    #   with:
+    #     registry: ${{ env.JFROG_URL }}
+    #     username: ${{ secrets.JFROG_USER }}
+    #     password: ${{ secrets.JFROG_TOKEN }}
 
     - name: Docker Build and Push
       working-directory: ${{ github.workspace }}
       run: |
+        echo "Building Docker image..."
+        jf docker login ${JFROG_URL}
         jf docker build -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
         jf docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} \
           --build-name=${BUILD_NAME} \
