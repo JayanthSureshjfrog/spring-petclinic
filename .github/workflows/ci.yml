@@ -7,7 +7,7 @@ jobs:
 
     env:
       IMAGE_NAME: petclinic
-      IMAGE_TAG: 1.1.0
+      IMAGE_TAG: 1.1.1
       BUILD_NAME: petclinic-build
       BUILD_NUMBER: ${{ github.run_number }}
       MODULE_NAME: petclinic-module
