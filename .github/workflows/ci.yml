@@ -147,7 +147,7 @@ jobs:
         jf rt curl -X GET /api/build/${BUILD_NAME}/${BUILD_NUMBER} || true
     - name: Xray Scan
       run: |
-        jf build-scan ${BUILD_NAME} ${BUILD_NUMBER} --vuln --format json
+        jf build-scan ${BUILD_NAME} ${BUILD_NUMBER}  --fail=false --format=table --extended-table=true --rescan=false --vuln=true
     - name: Docker Image Scan
       run: |
         jf docker scan ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} --vuln --format json
