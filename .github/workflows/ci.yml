@@ -119,15 +119,15 @@ jobs:
 
     - name: Publish Build Info
       run: |
-        jfrog rt build-publish ${BUILD_NAME} ${BUILD_NUMBER}
+        jf rt build-publish ${BUILD_NAME} ${BUILD_NUMBER}
     - name: Inspect published build-info
       run: |
         echo "=== Published build-info ==="
-        jfrog rt curl -X GET /api/build/${BUILD_NAME}/${BUILD_NUMBER} || true
+        jf rt curl -X GET /api/build/${BUILD_NAME}/${BUILD_NUMBER} || true
     - name: Xray Scan
       run: |
-        jfrog build-scan ${BUILD_NAME} ${BUILD_NUMBER} --vuln --format json
+        jf build-scan ${BUILD_NAME} ${BUILD_NUMBER} --vuln --format json
 
     - name: Docker Image Scan
       run: |
-        jfrog docker scan ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} --vuln --format json
+        jf docker scan ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} --vuln --format json
