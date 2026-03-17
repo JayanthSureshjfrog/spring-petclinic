@@ -14,6 +14,18 @@
 
   <name>petclinic</name>
 
+   <distributionManagement>
+    <repository>
+      <id>artifactory</id>
+      <url>https://psblr.jfrog.io/artifactory/jay-maven-dev-virtual</url>
+    </repository>
+    <snapshotRepository>
+      <id>artifactory</id>
+      <url>https://psblr.jfrog.io/artifactory/jay-maven-dev-virtual</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  
   <properties>
     <!-- Generic properties -->
     <java.version>17</java.version>
