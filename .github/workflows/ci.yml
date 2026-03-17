@@ -95,6 +95,7 @@ jobs:
     - name: Upload Maven artifacts to Artifactory (build-info)
       working-directory: ${{ github.workspace }}
       run: |
+        cd target
         jf rt u "target/spring-petclinic-*.jar" "${PLATFORM_REPO}/org/springframework/samples/spring-petclinic/" \
           --build-name=${BUILD_NAME} \
           --build-number=${BUILD_NUMBER} \
