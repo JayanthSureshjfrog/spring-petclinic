@@ -40,43 +40,64 @@ jobs:
         jf config show
         jf rt ping
 
-    - name: Configure Maven with JFrog Artifactory
+    - name: Generate Maven settings.xml
       run: |
-        set -euxo pipefail
-        mkdir -p jfrog-maven
-        jf --version || true
-        # jfrog config show setup-jfrog-cli-server || true
-        # # jfrog config add setup-jfrog-cli-server \
-        # #   --url=$JF_URL \
-        # #   --user=${{ secrets.JFROG_USER }} \
-        # #   --access-token=${{ secrets.JFROG_TOKEN }} \
-        # #   --interactive=false \
-        # #   --overwrite=true
-        # echo "=== jfrog config list ==="
-        # jfrog config show setup-jfrog-cli-server || true
-        jf mvn-config \
-          --server-id-resolve=setup-jfrog-cli-server \
-          --server-id-deploy=setup-jfrog-cli-server \
-          --repo-resolve-releases=$PLATFORM_REPO \
-          --repo-resolve-snapshots=$PLATFORM_REPO \
-          --repo-deploy-releases=$PLATFORM_REPO \
-          --repo-deploy-snapshots=$PLATFORM_REPO || true
-        echo "=== mvn-config result, listing ~/.m2 ==="
-        ls -la ~/.m2 || true
-        echo "=== generated settings.xml ==="
-        cat ~/.m2/settings.xml || true
-        cp ~/.m2/settings.xml jfrog-maven/settings.xml || true
-    - name: Verify Maven Config
-      run: |
-        echo "===== settings.xml ====="
-        cat jfrog-maven/settings.xml || true
-    - name: Maven Build with JFrog
+        mkdir -p ~/.m2
+        REPO_URL="${JF_URL}/artifactory/${PLATFORM_REPO}"
+        cat > ~/.m2/settings.xml << EOF
+        <settings>
+          <servers>
+            <server>
+              <id>artifactory</id>
+              <username>${{ secrets.JFROG_USER }}</username>
+              <password>${{ secrets.JFROG_TOKEN }}</password>
+            </server>
+          </servers>
+          <profiles>
+            <profile>
+              <id>artifactory</id>
+              <repositories>
+                <repository>
+                  <id>artifactory</id>
+                  <url>${REPO_URL}</url>
+                  <releases><enabled>true</enabled></releases>
+                  <snapshots><enabled>true</enabled></snapshots>
+                </repository>
+              </repositories>
+              <pluginRepositories>
+                <pluginRepository>
+                  <id>artifactory</id>
+                  <url>${REPO_URL}</url>
+                  <releases><enabled>true</enabled></releases>
+                  <snapshots><enabled>true</enabled></snapshots>
+                </pluginRepository>
+              </pluginRepositories>
+            </profile>
+          </profiles>
+          <activeProfiles>
+            <activeProfile>artifactory</activeProfile>
+          </activeProfiles>
+          <mirrors>
+            <mirror>
+              <id>artifactory</id>
+              <mirrorOf>*</mirrorOf>
+              <url>${REPO_URL}</url>
+            </mirror>
+          </mirrors>
+        </settings>
+        EOF
+        echo "=== settings.xml (passwords masked) ==="
+        sed 's|<password>.*</password>|<password>****</password>|g' ~/.m2/settings.xml
+
+    - name: Maven Build
+      working-directory: ${{ github.workspace }}
+      run: mvn clean package -DskipTests -B -s ~/.m2/settings.xml
+
+    - name: Collect Build Info
       working-directory: ${{ github.workspace }}
       run: |
-        jfrog rt mvn clean package -DskipTests \
-          # --settings ../jfrog-maven/settings.xml \
-          --build-name=${BUILD_NAME} \
-          --build-number=${BUILD_NUMBER}
+        jf rt build-collect-env ${BUILD_NAME} ${BUILD_NUMBER}
+        jf rt build-add-git ${BUILD_NAME} ${BUILD_NUMBER}
 
     
     - name: Docker Login to Artifactory
@@ -89,7 +110,7 @@ jobs:
     - name: Docker Build
       working-directory: "${{ github.workspace }}"
       run: |
-        jfrog docker build \
+        jf docker build \
           --build-name=${BUILD_NAME} \
           --build-number=${BUILD_NUMBER} \
           -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
