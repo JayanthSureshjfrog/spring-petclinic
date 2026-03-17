@@ -103,7 +103,7 @@ jobs:
     - name: Docker Login to Artifactory
       uses: docker/login-action@v2
       with:
-        registry: ${{ env.JFROG_URL }}
+        registry: ${{ env.JF_URL }}
         username: ${{ secrets.JFROG_USER }}
         password: ${{ secrets.JFROG_TOKEN }}
 
