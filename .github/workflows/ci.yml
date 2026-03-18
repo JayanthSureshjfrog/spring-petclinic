@@ -99,12 +99,12 @@ jobs:
           --build-name="${BUILD_NAME}" \
           --build-number="${BUILD_NUMBER}" \
           --module="${MODULE_NAME}" \
-          --flat=false
+          --flat=true
         jf rt u "target/spring-petclinic-*.pom" "${PLATFORM_REPO}/org/springframework/samples/spring-petclinic/" \
           --build-name="${BUILD_NAME}" \
           --build-number="${BUILD_NUMBER}" \
           --module="${MODULE_NAME}" \
-          --flat=false || true
+          --flat=true || true
     
     - name: Docker Login to Artifactory
       uses: docker/login-action@v2
@@ -128,9 +128,9 @@ jobs:
       working-directory: "${{ github.workspace }}"
       # run: docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
       run: |
-          jf docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} \
-            --build-name=${BUILD_NAME} \
-            --build-number=${BUILD_NUMBER} \
+          jf docker push "${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}" \
+            --build-name="${BUILD_NAME}" \
+            --build-number="${BUILD_NUMBER}" \
             --skip-login
             
 
