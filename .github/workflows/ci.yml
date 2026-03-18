@@ -148,4 +148,4 @@ jobs:
         jf build-scan "${BUILD_NAME}" "${BUILD_NUMBER}"  --fail=false --format=table --extended-table=true --rescan=false --vuln=true
     - name: Docker Image Scan
       run: |
-        jf docker scan "${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}" --vuln --format json
+        jf docker scan "${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}" --vuln=true --format=cyclonedx
