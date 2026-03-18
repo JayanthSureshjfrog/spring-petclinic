@@ -39,6 +39,7 @@ jobs:
       run: |
         jf config show
         jf rt ping
+    
     - name: Generate Maven settings.xml
       run: |
         mkdir -p ~/.m2
@@ -87,6 +88,7 @@ jobs:
         EOF
         echo "=== settings.xml (passwords masked) ==="
         sed 's|<password>.*</password>|<password>****</password>|g' ~/.m2/settings.xml
+   
     - name: Maven Build and Deploy to Artifactory
       working-directory: ${{ github.workspace }}
       # run: mvn clean deploy -DskipTests -B -s ~/.m2/settings.xml
@@ -109,7 +111,6 @@ jobs:
     - name: Docker Login to Artifactory
       uses: docker/login-action@v2
       with:
-        # registry: ${{ env.JF_URL }}
         registry: ${{ env.JFROG_URL }}
         username: ${{ secrets.JFROG_USER }}
         password: ${{ secrets.JFROG_TOKEN }}
@@ -117,22 +118,20 @@ jobs:
     - name: Docker Build
       working-directory: "${{ github.workspace }}"
       run: |
-        # jf docker build \
-        #   --build-name=${BUILD_NAME} \
-        #   --build-number=${BUILD_NUMBER} \
-        #   -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
+        jf docker build \
+          --build-name=${BUILD_NAME} \
+          --build-number=${BUILD_NUMBER} \
+          -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
           
-          jf docker build -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
+          # jf docker build -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
           
     - name: Docker Push
       working-directory: "${{ github.workspace }}"
-      # run: docker push ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
       run: |
           jf docker push "${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}" \
             --build-name="${BUILD_NAME}" \
             --build-number="${BUILD_NUMBER}" \
             --skip-login
-            
 
 
     - name: Publish Build Info (Maven + Docker)
@@ -142,10 +141,12 @@ jobs:
     - name: Inspect published build-info
       run: |
         echo "=== Published build-info ==="
-        jf rt curl -X GET "/api/build/${BUILD_NAME}/${BUILD_NUMBER}" || true
+        jf rt curl -X GET '/api/build/${BUILD_NAME}/${BUILD_NUMBER}' || true
+        
     - name: Xray Scan
       run: |
         jf build-scan "${BUILD_NAME}" "${BUILD_NUMBER}"  --fail=false --format=table --extended-table=true --rescan=false --vuln=true
+        
     - name: Docker Image Scan
       run: |
         jf docker scan "${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}" --vuln=true --format=cyclonedx
