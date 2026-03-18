@@ -135,8 +135,8 @@ jobs:
         
     - name: Inspect published build-info
       run: |
-        echo "=== Published build-info ==="
-        jf rt curl -X GET '/api/build/${BUILD_NAME}/${BUILD_NUMBER}' || true
+        echo "=== Inspect Published build-info ==="
+        jf rt curl -X GET '/api/build/"${BUILD_NAME}"/"${BUILD_NUMBER}"' || true
         
     - name: Xray Scan
       run: |
