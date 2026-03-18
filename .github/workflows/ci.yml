@@ -117,13 +117,8 @@ jobs:
 
     - name: Docker Build
       working-directory: "${{ github.workspace }}"
-      run: |
-        jf docker build \
-          --build-name=${BUILD_NAME} \
-          --build-number=${BUILD_NUMBER} \
-          -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
-          
-          # jf docker build -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
+      run: |  
+          jf docker build -t ${JFROG_URL}/${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG} .
           
     - name: Docker Push
       working-directory: "${{ github.workspace }}"
