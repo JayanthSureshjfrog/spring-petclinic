@@ -96,12 +96,14 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         jf rt u "target/spring-petclinic-*.jar" "${PLATFORM_REPO}/org/springframework/samples/spring-petclinic/" \
-          --build-name=${BUILD_NAME} \
-          --build-number=${BUILD_NUMBER} \
+          --build-name="${BUILD_NAME}" \
+          --build-number="${BUILD_NUMBER}" \
+          --module="${MODULE_NAME}" \
           --flat=false
         jf rt u "target/spring-petclinic-*.pom" "${PLATFORM_REPO}/org/springframework/samples/spring-petclinic/" \
-          --build-name=${BUILD_NAME} \
-          --build-number=${BUILD_NUMBER} \
+          --build-name="${BUILD_NAME}" \
+          --build-number="${BUILD_NUMBER}" \
+          --module="${MODULE_NAME}" \
           --flat=false || true
     
     - name: Docker Login to Artifactory
